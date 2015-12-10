@@ -513,6 +513,10 @@ class GenericServer(object):
                             n["last_check"] = str(tds[2].string)
                             # duration
                             n["duration"] = str(tds[3].string)
+                            for entity in n["duration"].split():
+                                if int(entity[:-1]) > 0:
+                                    n["duration"] = entity
+                                    break
                             # division between Nagios and Icinga in real life... where
                             # Nagios has only 5 columns there are 7 in Icinga 1.3...
                             # ... and 6 in Icinga 1.2 :-)
@@ -635,6 +639,10 @@ class GenericServer(object):
                             n["last_check"] = str(tds[3](text=not_empty)[0])
                             # duration
                             n["duration"] = str(tds[4](text=not_empty)[0])
+                            for entity in n["duration"].split():
+                                if int(entity[:-1]) > 0:
+                                    n["duration"] = entity
+                                    break
                             # attempt
                             # to fix http://sourceforge.net/tracker/?func=detail&atid=1101370&aid=3280961&group_id=236865 .attempt needs
                             # to be stripped
