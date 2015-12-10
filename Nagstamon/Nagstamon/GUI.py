@@ -2777,7 +2777,8 @@ class ServerVBox(gtk.VBox):
                 tab_column.set_attributes(cell_txt, foreground=8, text=s)
                 tab_column.add_attribute(cell_txt, "cell-background", offset_color[s % 2 ])
                 tab_column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
-                if column.get_label() == 'Status Information':
+                if column.get_label() == 'Status Information' and\
+                 str(self.output.conf.fullscreen) == "True":
                     def resize_wrap(scroll, allocation, treeview, column, cell):
                         otherColumns = (c for c in treeview.get_columns() if c != column)
                         newWidth = allocation.width - sum(c.get_width() for c in otherColumns)
