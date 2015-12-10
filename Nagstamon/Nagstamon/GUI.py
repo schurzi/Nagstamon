@@ -2777,6 +2777,25 @@ class ServerVBox(gtk.VBox):
                 tab_column.set_attributes(cell_txt, foreground=8, text=s)
                 tab_column.add_attribute(cell_txt, "cell-background", offset_color[s % 2 ])
                 tab_column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+                if column.get_label() == 'Status Information':
+                    def resize_wrap(scroll, allocation, treeview, column, cell):
+                        otherColumns = (c for c in treeview.get_columns() if c != column)
+                        newWidth = allocation.width - sum(c.get_width() for c in otherColumns)
+                        newWidth -= treeview.style_get_property("horizontal-separator") * 4
+                        if cell.props.wrap_width == newWidth or newWidth <= 0:
+                                return
+                        if newWidth < 300:
+                                newWidth = 300
+                        cell.props.wrap_width = newWidth
+                        column.set_property('min-width', newWidth + 10)
+                        column.set_property('max-width', newWidth + 10)
+                        store = treeview.get_model()
+                        iter = store.get_iter_first()
+                        while iter and store.iter_is_valid(iter):
+                                store.row_changed(store.get_path(iter), iter)
+                                iter = store.iter_next(iter)
+                                treeview.set_size_request(0,-1)
+                    self.connect_after('size-allocate', resize_wrap, self.server.TreeView, tab_column, cell_txt)
 
             # set customized sorting
             if column.has_customized_sorting():
