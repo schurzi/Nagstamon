@@ -23,7 +23,6 @@ import cookielib
 import sys
 import socket
 import copy
-import webbrowser
 import datetime
 import time
 import traceback
@@ -94,12 +93,6 @@ class GenericServer(object):
 
     # Arguments available for submitting check results
     SUBMIT_CHECK_RESULT_ARGS = ["check_output", "performance_data"]
-
-    # URLs for browser shortlinks/buttons on popup window
-    BROWSER_URLS = { "monitor": "$MONITOR$",\
-                    "hosts": "$MONITOR-CGI$/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=12",\
-                    "services": "$MONITOR-CGI$/status.cgi?host=all&servicestatustypes=253",\
-                    "history": "$MONITOR-CGI$/history.cgi?host=all"}
 
 
     def __init__(self, **kwds):
@@ -456,36 +449,6 @@ class GenericServer(object):
         except:
             self.Error(sys.exc_info())
             return "n/a", "n/a"
-
-
-    def open_tree_view(self, host, service=""):
-        """
-        open monitor from treeview context menu
-        """
-        # only type is important so do not care of service "" in case of host monitor
-        if service == "":
-            typ = 1
-        else:
-            typ = 2
-        if str(self.conf.debug_mode) == "True":
-            self.Debug(server=self.get_name(), host=host, service=service, debug="Open host/service monitor web page " + self.monitor_cgi_url + '/extinfo.cgi?' + urllib.urlencode({"type":typ, "host":host, "service":service}))
-        webbrowser.open(self.monitor_cgi_url + '/extinfo.cgi?' + urllib.urlencode({"type":typ, "host":host, "service":service}))
-
-
-    def OpenBrowser(self, widget=None, url_type="", output=None):
-        """
-        multiple purpose open browser method for all open-a-browser-needs
-        """
-        # first close popwin
-        if output <> None:
-            output.popwin.Close()
-
-        # run thread with action
-        action = Actions.Action(string=self.BROWSER_URLS[url_type],\
-                        type="browser",\
-                        conf=self.conf,\
-                        server=self)
-        action.run()
 
 
     def _get_status(self):

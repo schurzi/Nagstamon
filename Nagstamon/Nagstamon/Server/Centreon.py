@@ -18,7 +18,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 import urllib, urllib2
-import webbrowser
 import socket
 import sys
 import re
@@ -33,12 +32,6 @@ class CentreonServer(GenericServer):
     SID = None
     # count for SID regeneration
     SIDcount = 0
-
-    # URLs for browser shortlinks/buttons on popup window
-    BROWSER_URLS= { "monitor": "$MONITOR$/main.php?p=1",\
-                    "hosts": "$MONITOR$/main.php?p=20103&o=hpb",\
-                    "services": "$MONITOR$/main.php?p=20202&o=svcpb",\
-                    "history": "$MONITOR$/main.php?p=203"}
 
     # A Monitor CGI URL is not necessary so hide it in settings
     DISABLED_CONTROLS = ["label_monitor_cgi_url",
@@ -97,25 +90,6 @@ class CentreonServer(GenericServer):
         dummy init_config, called at thread start, not really needed here, just omit extra properties
         """
         pass
-
-
-    def open_tree_view(self, host, service=""):
-        if str(self.use_autologin) == "True":
-            auth = "&autologin=1&useralias=" + self.username + "&token=" + self.autologin_key
-            if host == '_Module_Meta':
-                webbrowser.open(self.monitor_cgi_url + "/index.php?" + urllib.urlencode({"p":20206,"o":"meta"}) + auth )
-            elif service == "":
-                webbrowser.open(self.monitor_cgi_url + "/index.php?" + urllib.urlencode({"p":201,"o":"hd", "host_name":host}) + auth )
-            else:
-                webbrowser.open(self.monitor_cgi_url + "/index.php?" + urllib.urlencode({"p":202, "o":"svcd",  "host_name":host, "service_description":service}) + auth )
-        else:
-            if host == '_Module_Meta':
-                webbrowser.open(self.monitor_cgi_url + "/main.php?" + urllib.urlencode({"p":20206,"o":"meta"}))
-            # must be a host if service is empty...
-            elif service == "":
-                webbrowser.open(self.monitor_cgi_url + "/main.php?" + urllib.urlencode({"p":201,"o":"hd", "host_name":host}))
-            else:
-                webbrowser.open(self.monitor_cgi_url + "/main.php?" + urllib.urlencode({"p":202, "o":"svcd",  "host_name":host, "service_description":service}))
 
 
     def get_start_end(self, host):
@@ -200,13 +174,9 @@ class CentreonServer(GenericServer):
         gets a shiny new SID for XML HTTP requests to Centreon cutting it out via .partition() from raw HTML
         additionally get php session cookie
         """
-        # BROWSER_URLS using autologin
+        # autologin
         if str(self.use_autologin) == "True":
             auth = "&autologin=1&useralias=" + self.username + "&token=" + self.autologin_key
-            self.BROWSER_URLS= { "monitor": "$MONITOR$/index.php?p=1" + auth,\
-                            "hosts": "$MONITOR$/index.php?p=20103&o=hpb" + auth,\
-                            "services": "$MONITOR$/index.php?p=20202&o=svcpb" + auth,\
-                            "history": "$MONITOR$/index.php?p=203" + auth}
         try:
             if str(self.use_autologin) == "True":
               raw = self.FetchURL(self.monitor_cgi_url + "/index.php?p=101&autologin=1&useralias=" + self.username + "&token=" + self.autologin_key, giveback="raw")
@@ -249,7 +219,7 @@ class CentreonServer(GenericServer):
                 self.Debug(server=self.get_name(), debug = "Could not detect host/service status version. Using Centreon_Broker")
         # some cleanup
         del result, error
-	
+
 
     def _get_host_id(self, host):
         """
@@ -449,7 +419,7 @@ class CentreonServer(GenericServer):
                         # //----- META SERVICES -----
                         # if it is a meta-service, add the "sdl" fild in parenthesis after the service name. ( used in _set_acknowledge() and _set_recheck() ) :
                         if self.new_hosts[str(l.hn.text)].services[str(l.sd.text)].host == '_Module_Meta':
-                            self.new_hosts[str(l.hn.text)].services[str(l.sd.text)].name = '{} ({})'.format( 
+                            self.new_hosts[str(l.hn.text)].services[str(l.sd.text)].name = '{} ({})'.format(
                                                                                                                     self.new_hosts[str(l.hn.text)].services[str(l.sd.text)].name,
                                                                                                                     l.sdl.text
                             )

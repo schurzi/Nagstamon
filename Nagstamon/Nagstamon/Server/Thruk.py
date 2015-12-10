@@ -86,12 +86,6 @@ class ThrukServer(GenericServer):
     # Arguments available for submitting check results
     SUBMIT_CHECK_RESULT_ARGS = ["check_output", "performance_data"]
 
-    # URLs for browser shortlinks/buttons on popup window
-    BROWSER_URLS = { "monitor": "$MONITOR$",\
-                    "hosts": "$MONITOR-CGI$/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=12&page=1&entries=all",\
-                    "services": "$MONITOR-CGI$/status.cgi?dfl_s0_value_sel=5&dfl_s0_servicestatustypes=29&dfl_s0_op=%3D&style=detail&dfl_s0_type=host&dfl_s0_serviceprops=0&dfl_s0_servicestatustype=4&dfl_s0_servicestatustype=8&dfl_s0_servicestatustype=16&dfl_s0_servicestatustype=1&hidetop=&dfl_s0_hoststatustypes=15&dfl_s0_val_pre=&hidesearch=2&dfl_s0_value=all&dfl_s0_hostprops=0&nav=&page=1&entries=all",\
-                    "history": "$MONITOR-CGI$/history.cgi?host=all&page=1&entries=all"}
-
     STATES_MAPPING = {"hosts" : {0 : "OK", 1 : "DOWN", 2 : "UNREACHABLE"},\
                       "services" : {0 : "OK", 1 : "WARNING",  2 : "CRITICAL", 3 : "UNKNOWN"}}
 
@@ -272,4 +266,3 @@ class ThrukServer(GenericServer):
 
         #dummy return in case all is OK
         return Result()
-

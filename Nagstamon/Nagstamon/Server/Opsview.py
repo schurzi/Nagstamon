@@ -19,7 +19,6 @@
 
 import sys
 import urllib
-import webbrowser
 import copy
 import pprint
 import json
@@ -47,12 +46,6 @@ class OpsviewServer(GenericServer):
 
     # Arguments available for submitting check results
     SUBMIT_CHECK_RESULT_ARGS = ["comment"]
-
-    # URLs for browser shortlinks/buttons on popup window
-    BROWSER_URLS= { "monitor": "$MONITOR$/monitoring",\
-                    "hosts": "$MONITOR$/monitoring/#!/allproblems",\
-                    "services": "$MONITOR$/monitoring/#!/allproblems",\
-                    "history": "$MONITOR$/monitoring/#!/events"}
 
     # autologin is used only by Centreon
     DISABLED_CONTROLS = ["input_checkbutton_use_autologin",
@@ -269,8 +262,3 @@ class OpsviewServer(GenericServer):
 
         #dummy return in case all is OK
         return Result()
-
-
-    def open_tree_view(self, host, service):
-        webbrowser.open('%s/monitoring/#!?autoSelectHost=%s' % (self.monitor_url, host))
-

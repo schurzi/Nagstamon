@@ -225,9 +225,6 @@ class GUI(object):
         self.statusbar.EventBoxLabel.connect("enter-notify-event", self.statusbar.Hovered)
         self.statusbar.EventBoxLabel.connect("button-press-event", self.statusbar.Clicked)
 
-        # server combobox
-        self.popwin.ComboboxMonitor.connect("changed", self.popwin.ComboboxClicked)
-
         # attempt to place and resize statusbar where it belongs to in Windows - workaround
         self.statusbar.StatusBar.move(int(self.conf.position_x), int(self.conf.position_y))
         self.statusbar.Resize()
@@ -1635,22 +1632,14 @@ class StatusBar(object):
         """
         # Popup menu for statusbar
         self.Menu = gtk.Menu()
-        for i in ["Refresh", "Recheck all", "-----", "Monitors", "-----", "Settings...", "Save position", "About", "Exit"]:
+        for i in ["Refresh", "Recheck all", "-----", "Settings...", "Save position", "About", "Exit"]:
             if i == "-----":
                 menu_item = gtk.SeparatorMenuItem()
                 self.Menu.append(menu_item)
             else:
-                if i == "Monitors":
-                    monitor_items = list(self.output.servers)
-                    monitor_items.sort(key=str.lower)
-                    for m in monitor_items:
-                        menu_item = gtk.MenuItem(m)
-                        menu_item.connect("activate", self.MenuResponseMonitors, m)
-                        self.Menu.append(menu_item)
-                else:
-                    menu_item = gtk.MenuItem(i)
-                    menu_item.connect("activate", self.MenuResponse, i)
-                    self.Menu.append(menu_item)
+                menu_item = gtk.MenuItem(i)
+                menu_item.connect("activate", self.MenuResponse, i)
+                self.Menu.append(menu_item)
 
         self.Menu.show_all()
 
@@ -1729,13 +1718,6 @@ class StatusBar(object):
             # silly Windows(TM) workaround to keep menu above taskbar
             if not platform.system() == "Darwin":
                 self.Menu.window.set_keep_above(True)
-
-
-    def MenuResponseMonitors(self, widget, menu_entry):
-        """
-            open responding Nagios status web page
-        """
-        self.output.servers[menu_entry].OpenBrowser(url_type="monitor")
 
 
     def MenuResponse(self, widget, menu_entry):
@@ -2214,14 +2196,6 @@ class Popwin(object):
         servervbox.set_no_show_all(True)
 
         # connect buttons with actions
-        # open Nagios main page in your favorite web browser when nagios button is clicked
-        servervbox.ButtonMonitor.connect("clicked", server.OpenBrowser, "monitor", self.output)
-        # open Nagios services in your favorite web browser when service button is clicked
-        servervbox.ButtonServices.connect("clicked", server.OpenBrowser, "services", self.output)
-        # open Nagios hosts in your favorite web browser when hosts button is clicked
-        servervbox.ButtonHosts.connect("clicked", server.OpenBrowser, "hosts", self.output)
-        # open Nagios history in your favorite web browser when hosts button is clicked
-        servervbox.ButtonHistory.connect("clicked", server.OpenBrowser, "history", self.output)
         # OK button for monitor credentials refreshment or when "Enter" being pressed in password field
         servervbox.AuthButtonOK.connect("clicked", servervbox.AuthOK, server)
         # jump to password entry field if Return has been pressed on username entry field
@@ -2579,18 +2553,6 @@ class Popwin(object):
         stub method to set popwin showable after button-release-event after moving statusbar
         """
         self.showPopwin = True
-
-
-    def ComboboxClicked(self, widget=None):
-        """
-            open web interface of selected server
-        """
-        try:
-            active = widget.get_active_iter()
-            model = widget.get_model()
-            self.output.servers[model.get_value(active, 0)].OpenBrowser(url_type="monitor", output=self.output)
-        except:
-            self.output.servers.values()[0].Error(sys.exc_info())
 
 
     def UpdateStatus(self, server):
@@ -2998,9 +2960,6 @@ class ServerVBox(gtk.VBox):
             elif remoteservice == "Edit actions...":
                 # open actions settings
                 self.output.GetDialog(dialog="Settings", servers=self.output.servers, output=self.output, conf=self.output.conf, first_page="Actions")
-            elif remoteservice == "Monitor":
-                # let Actions.TreeViewNagios do the work to open a webbrowser with nagios informations
-                Actions.TreeViewNagios(self.miserable_server, self.miserable_host, self.miserable_service)
             elif remoteservice == "Recheck":
                 # start new rechecking thread
                 recheck = Actions.Recheck(server=self.miserable_server, host=self.miserable_host, service=self.miserable_service)
@@ -4530,7 +4489,7 @@ class GenericAction(object):
         cr = gtk.CellRendererText()
         self.combobox_action_type.pack_start(cr, True)
         self.combobox_action_type.set_attributes(cr, text=0)
-        for action_type in ["Browser", "Command", "URL"]:
+        for action_type in ["Command", "URL"]:
             self.combomodel_action_type.append((action_type,))
         self.combobox_action_type.set_model(self.combomodel_action_type)
 

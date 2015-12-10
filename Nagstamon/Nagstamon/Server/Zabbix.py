@@ -31,7 +31,6 @@
 
 import sys
 import urllib
-import webbrowser
 import base64
 import time
 import datetime
@@ -69,7 +68,7 @@ class ZabbixServer(GenericServer):
     def __init__(self, **kwds):
         GenericServer.__init__(self, **kwds)
 
-        # Prepare all urls needed by nagstamon - 
+        # Prepare all urls needed by nagstamon -
         self.urls = {}
         self.statemap = {}
 
@@ -243,7 +242,7 @@ class ZabbixServer(GenericServer):
                 if api_version > '1.8':
                     state = '%s' % service['description']
                 else:
-                    state = '%s=%s' % (service['items'][0]['key_'], service['items'][0]['lastvalue']) 
+                    state = '%s=%s' % (service['items'][0]['key_'], service['items'][0]['lastvalue'])
                 n = {
                     'host': service['host'],
                     'service': service['description'],
@@ -309,35 +308,6 @@ class ZabbixServer(GenericServer):
             return Result(result=result, error=error)
 
         return ret
-
-    def _open_browser(self, url):
-        webbrowser.open(url)
-
-        if str(self.conf.debug_mode) == "True":
-            self.Debug(server=self.get_name(), debug="Open web page " + url)
-
-    def open_services(self):
-        self._open_browser(self.urls['human_services'])
-
-    def open_hosts(self):
-        self._open_browser(self.urls['human_hosts'])
-
-    def open_tree_view(self, host, service=""):
-        """
-        open monitor from treeview context menu
-        """
-
-        if service == "":
-            url = self.urls['human_host'] + urllib.urlencode(
-                {'x': 'site=' + self.hosts[host].site + '&host=' + host}).replace('x=', '%26')
-        else:
-            url = self.urls['human_service'] + urllib.urlencode(
-                {'x': 'site=' + self.hosts[host].site + '&host=' + host + '&service=' + service}).replace('x=', '%26')
-
-        if str(self.conf.debug_mode) == "True":
-            self.Debug(server=self.get_name(), host=host, service=service,
-                       debug="Open host/service monitor web page " + url)
-        webbrowser.open(url)
 
     def GetHost(self, host):
         """
