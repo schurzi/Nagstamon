@@ -123,12 +123,6 @@ class Op5MonitorServer(GenericServer):
                          "input_checkbutton_use_display_name_host",
                          "input_checkbutton_use_display_name_service"]
 
-    # URLs for browser shortlinks/buttons on popup window
-    BROWSER_URLS = { "monitor": "$MONITOR$/monitor",\
-                    "hosts": "$MONITOR$/monitor/index.php/listview?q=%s" % '[hosts] all and state != 0'.replace(" ", "%20"),\
-                    "services": "$MONITOR$/monitor/index.php/listview?q=%s" % '[services] all and state != 0'.replace(" ", "%20"),\
-                    "history": "$MONITOR$/monitor/index.php/alert_history/generate"}
-
     def __init__(self, **kwds):
         GenericServer.__init__(self, **kwds)
 
@@ -256,15 +250,6 @@ class Op5MonitorServer(GenericServer):
             return Result(result=result, error=error)
 
         return Result()
-
-
-    def open_tree_view(self, host, service):
-        if not service:
-            url = "%s/monitor/index.php/extinfo/details?host=%s" % (self.monitor_url, host)
-        else:
-            url = "%s/monitor/index.php/extinfo/details?host=%s&service=%s" % (self.monitor_url, host, service)
-        action = Actions.Action(type="browser", string=url, conf=self.conf, server=self, host=host, service=service)
-        action.run()
 
     def get_start_end(self, host):
         return time.strftime("%Y-%m-%d %H:%M"), time.strftime("%Y-%m-%d %H:%M", time.localtime(time.time() + 7200))

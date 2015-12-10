@@ -22,7 +22,6 @@ import gobject
 import time
 import datetime
 import urllib
-import webbrowser
 import subprocess
 import re
 import sys
@@ -640,12 +639,7 @@ class Action(threading.Thread):
                 string = string.replace(i, mapping[i])
 
             # see what action to take
-            if action_type == "browser":
-                # debug
-                if str(self.conf.debug_mode) == "True":
-                    self.server.Debug(server=self.server.name, host=self.host, service=self.service, debug="ACTION: BROWSER " + string)
-                webbrowser.open(string)
-            elif action_type == "command":
+            if action_type == "command":
                 # debug
                 if str(self.conf.debug_mode) == "True":
                     self.server.Debug(server=self.server.name, host=self.host, service=self.service, debug="ACTION: COMMAND " + string)
@@ -867,8 +861,6 @@ def OpenNagstamonDownload(output=None):
     """
     # first close popwin
     output.popwin.Close()
-    # start browser with URL
-    webbrowser.open("https://nagstamon.ifw-dresden.de/download")
 
 
 def IsFoundByRE(string, pattern, reverse):
@@ -1120,4 +1112,3 @@ class MultipartPostHandler(urllib2.BaseHandler):
     https_request = http_request
 
 # </IMPORT>
-

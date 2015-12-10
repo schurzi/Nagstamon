@@ -20,7 +20,6 @@
 
 import sys
 import urllib2
-import webbrowser
 import base64
 import datetime
 import time
@@ -133,21 +132,6 @@ class NinjaServer(GenericServer):
         response = opener.open(self.show_login_url)
         soup = BeautifulSoup(response.read())
         return soup.find('input', {'name': 'csrf_token'})['value']
-
-
-    def open_tree_view(self, host, service):
-        if not service:
-            webbrowser.open('%s/index.php/extinfo/details/host/%s' % (self.monitor_url, host))
-        else:
-            webbrowser.open('%s/index.php/extinfo/details/service/%s?service=%s' % (self.monitor_url, host, service))
-
-
-    def open_services(self):
-        webbrowser.open('%s/index.php/status/service/all?servicestatustypes=14' % (self.monitor_url))
-
-
-    def open_hosts(self):
-        webbrowser.open('%s/index.php/status/host/all/6' % (self.monitor_url))
 
 
     @property

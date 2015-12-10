@@ -55,6 +55,8 @@ Resources = ""
 try:
     import pkg_resources
     Resources = pkg_resources.resource_filename("Nagstamon", "resources")
+    if not os.path.exists(Resources):
+        raise Exception('Path in pkg_resources invalid')
 except Exception, err:
     # get resources directory from current directory - only if not being set before by pkg_resources
     # try-excepts necessary for platforms like Windows .EXE

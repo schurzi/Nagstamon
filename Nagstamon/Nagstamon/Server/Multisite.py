@@ -27,7 +27,6 @@
 
 import sys
 import urllib
-import webbrowser
 import time
 import copy
 
@@ -90,12 +89,6 @@ class MultisiteServer(GenericServer):
        special treatment for Check_MK Multisite JSON API
     """
     TYPE = 'Check_MK Multisite'
-
-    # URLs for browser shortlinks/buttons on popup window
-    BROWSER_URLS= { "monitor": "$MONITOR$",\
-                    "hosts": "$MONITOR$/index.py?start_url=view.py?view_name=hostproblems",\
-                    "services": "$MONITOR$/index.py?start_url=view.py?view_name=svcproblems",\
-                    "history": '$MONITOR$/index.py?start_url=view.py?view_name=events'}
 
     # A Monitor CGI URL is not necessary so hide it in settings
     # autologin is used only by Centreon
@@ -415,21 +408,6 @@ class MultisiteServer(GenericServer):
         del url_params
 
         return ret
-
-
-    def open_tree_view(self, host, service=""):
-        """
-        open monitor from treeview context menu
-        """
-
-        if service == "":
-            url = self.urls['human_host'] + urllib.urlencode({'x': 'site='+self.hosts[host].site+'&host='+host}).replace('x=', '%26')
-        else:
-            url = self.urls['human_service'] + urllib.urlencode({'x': 'site='+self.hosts[host].site+'&host='+host+'&service='+service}).replace('x=', '%26')
-
-        if str(self.conf.debug_mode) == "True":
-            self.Debug(server=self.get_name(), host=host, service=service, debug="Open host/service monitor web page " + url)
-        webbrowser.open(url)
 
 
     def GetHost(self, host):

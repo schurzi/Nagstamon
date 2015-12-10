@@ -23,7 +23,6 @@ import cookielib
 import sys
 import socket
 import copy
-import webbrowser
 import datetime
 import time
 import traceback
@@ -94,12 +93,6 @@ class GenericServer(object):
 
     # Arguments available for submitting check results
     SUBMIT_CHECK_RESULT_ARGS = ["check_output", "performance_data"]
-
-    # URLs for browser shortlinks/buttons on popup window
-    BROWSER_URLS = { "monitor": "$MONITOR$",\
-                    "hosts": "$MONITOR-CGI$/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=12",\
-                    "services": "$MONITOR-CGI$/status.cgi?host=all&servicestatustypes=253",\
-                    "history": "$MONITOR-CGI$/history.cgi?host=all"}
 
 
     def __init__(self, **kwds):
@@ -458,36 +451,6 @@ class GenericServer(object):
             return "n/a", "n/a"
 
 
-    def open_tree_view(self, host, service=""):
-        """
-        open monitor from treeview context menu
-        """
-        # only type is important so do not care of service "" in case of host monitor
-        if service == "":
-            typ = 1
-        else:
-            typ = 2
-        if str(self.conf.debug_mode) == "True":
-            self.Debug(server=self.get_name(), host=host, service=service, debug="Open host/service monitor web page " + self.monitor_cgi_url + '/extinfo.cgi?' + urllib.urlencode({"type":typ, "host":host, "service":service}))
-        webbrowser.open(self.monitor_cgi_url + '/extinfo.cgi?' + urllib.urlencode({"type":typ, "host":host, "service":service}))
-
-
-    def OpenBrowser(self, widget=None, url_type="", output=None):
-        """
-        multiple purpose open browser method for all open-a-browser-needs
-        """
-        # first close popwin
-        if output <> None:
-            output.popwin.Close()
-
-        # run thread with action
-        action = Actions.Action(string=self.BROWSER_URLS[url_type],\
-                        type="browser",\
-                        conf=self.conf,\
-                        server=self)
-        action.run()
-
-
     def _get_status(self):
         """
         Get status from Nagios Server
@@ -550,6 +513,10 @@ class GenericServer(object):
                             n["last_check"] = str(tds[2].string)
                             # duration
                             n["duration"] = str(tds[3].string)
+                            for entity in n["duration"].split():
+                                if int(entity[:-1]) > 0:
+                                    n["duration"] = entity
+                                    break
                             # division between Nagios and Icinga in real life... where
                             # Nagios has only 5 columns there are 7 in Icinga 1.3...
                             # ... and 6 in Icinga 1.2 :-)
@@ -672,6 +639,10 @@ class GenericServer(object):
                             n["last_check"] = str(tds[3](text=not_empty)[0])
                             # duration
                             n["duration"] = str(tds[4](text=not_empty)[0])
+                            for entity in n["duration"].split():
+                                if int(entity[:-1]) > 0:
+                                    n["duration"] = entity
+                                    break
                             # attempt
                             # to fix http://sourceforge.net/tracker/?func=detail&atid=1101370&aid=3280961&group_id=236865 .attempt needs
                             # to be stripped

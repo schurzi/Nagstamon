@@ -225,7 +225,7 @@ class Config(object):
                         object.__setattr__(self, i[0], BOOLPOOL[i[1]])
                     else:
                         object.__setattr__(self, i[0], i[1])
-                        
+
             # because the switch from Nagstamon 1.0 to 1.0.1 brings the use_system_keyring property
             # and all the thousands 1.0 installations do not know it yet it will be more comfortable
             # for most of the Windows users if it is only defined as False after it was checked
@@ -797,15 +797,6 @@ class Config(object):
                                                     filter_target_host=False, enabled=False,
                                                     string="$MONITOR-CGI$/cmd.cgi?cmd_typ=34&cmd_mod=2&host=$HOST$\
                                                     &service=$SERVICE$&com_author=$USERNAME$&com_data=acknowledged&btnSubmit=Commit")
-        defaultactions["Opsview-Graph-Service"] = Action(name="Opsview-Graph-Service", type="browser",
-                        description="Show graph in browser.", filter_target_host=False,
-                                                    string="$MONITOR$/graph?service=$SERVICE$&host=$HOST$", enabled=False)
-        defaultactions["Opsview-History-Host"] = Action(name="Opsview-Host-Service", type="browser",
-                                                    description="Show host in browser.", filter_target_host=True,
-                                                    string="$MONITOR$/event?host=$HOST$", enabled=False)
-        defaultactions["Opsview-History-Service"] = Action(name="Opsview-History-Service", type="browser",
-                                                    description="Show history in browser.", filter_target_host=True,
-                                                    string="$MONITOR$/event?host=$HOST$&service=$SERVICE$", enabled=False)
         defaultactions["Check_MK-1-Click-Acknowledge-Host"] = Action(name="Check_MK-1-Click-Acknowledge-Host", type="url",
                                                     description="Acknowledges a host with one click.",
                                                     filter_target_service=False, enabled=False,
@@ -818,8 +809,6 @@ class Config(object):
                                                      monitor_type="Check_MK Multisite",
                                                      description="Edit host in WATO.",
                                                      string="$MONITOR$/index.py?start_url=%2Fmonitor%2Fcheck_mk%2Fwato.py%3Fmode%3Dedithost%26host%3D$HOST$")
-        defaultactions["Email"] = Action(name="Email", enabled=False, description="Send email to someone.", type="browser",
-                                                    string="mailto:servicedesk@my.org?subject=Monitor alert: $HOST$ - $SERVICE$ - $STATUS-INFO$&body=Please help!.%0d%0aBest regards from Nagstamon")
 
         return defaultactions
 

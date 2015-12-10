@@ -225,9 +225,6 @@ class GUI(object):
         self.statusbar.EventBoxLabel.connect("enter-notify-event", self.statusbar.Hovered)
         self.statusbar.EventBoxLabel.connect("button-press-event", self.statusbar.Clicked)
 
-        # server combobox
-        self.popwin.ComboboxMonitor.connect("changed", self.popwin.ComboboxClicked)
-
         # attempt to place and resize statusbar where it belongs to in Windows - workaround
         self.statusbar.StatusBar.move(int(self.conf.position_x), int(self.conf.position_y))
         self.statusbar.Resize()
@@ -1635,22 +1632,14 @@ class StatusBar(object):
         """
         # Popup menu for statusbar
         self.Menu = gtk.Menu()
-        for i in ["Refresh", "Recheck all", "-----", "Monitors", "-----", "Settings...", "Save position", "About", "Exit"]:
+        for i in ["Refresh", "Recheck all", "-----", "Settings...", "Save position", "About", "Exit"]:
             if i == "-----":
                 menu_item = gtk.SeparatorMenuItem()
                 self.Menu.append(menu_item)
             else:
-                if i == "Monitors":
-                    monitor_items = list(self.output.servers)
-                    monitor_items.sort(key=str.lower)
-                    for m in monitor_items:
-                        menu_item = gtk.MenuItem(m)
-                        menu_item.connect("activate", self.MenuResponseMonitors, m)
-                        self.Menu.append(menu_item)
-                else:
-                    menu_item = gtk.MenuItem(i)
-                    menu_item.connect("activate", self.MenuResponse, i)
-                    self.Menu.append(menu_item)
+                menu_item = gtk.MenuItem(i)
+                menu_item.connect("activate", self.MenuResponse, i)
+                self.Menu.append(menu_item)
 
         self.Menu.show_all()
 
@@ -1729,13 +1718,6 @@ class StatusBar(object):
             # silly Windows(TM) workaround to keep menu above taskbar
             if not platform.system() == "Darwin":
                 self.Menu.window.set_keep_above(True)
-
-
-    def MenuResponseMonitors(self, widget, menu_entry):
-        """
-            open responding Nagios status web page
-        """
-        self.output.servers[menu_entry].OpenBrowser(url_type="monitor")
 
 
     def MenuResponse(self, widget, menu_entry):
@@ -2214,14 +2196,6 @@ class Popwin(object):
         servervbox.set_no_show_all(True)
 
         # connect buttons with actions
-        # open Nagios main page in your favorite web browser when nagios button is clicked
-        servervbox.ButtonMonitor.connect("clicked", server.OpenBrowser, "monitor", self.output)
-        # open Nagios services in your favorite web browser when service button is clicked
-        servervbox.ButtonServices.connect("clicked", server.OpenBrowser, "services", self.output)
-        # open Nagios hosts in your favorite web browser when hosts button is clicked
-        servervbox.ButtonHosts.connect("clicked", server.OpenBrowser, "hosts", self.output)
-        # open Nagios history in your favorite web browser when hosts button is clicked
-        servervbox.ButtonHistory.connect("clicked", server.OpenBrowser, "history", self.output)
         # OK button for monitor credentials refreshment or when "Enter" being pressed in password field
         servervbox.AuthButtonOK.connect("clicked", servervbox.AuthOK, server)
         # jump to password entry field if Return has been pressed on username entry field
@@ -2581,18 +2555,6 @@ class Popwin(object):
         self.showPopwin = True
 
 
-    def ComboboxClicked(self, widget=None):
-        """
-            open web interface of selected server
-        """
-        try:
-            active = widget.get_active_iter()
-            model = widget.get_model()
-            self.output.servers[model.get_value(active, 0)].OpenBrowser(url_type="monitor", output=self.output)
-        except:
-            self.output.servers.values()[0].Error(sys.exc_info())
-
-
     def UpdateStatus(self, server):
         """
             Updates status field of a server
@@ -2769,6 +2731,10 @@ class ServerVBox(gtk.VBox):
 
         for s, column in enumerate(self.server.COLUMNS):
             tab_column = gtk.TreeViewColumn(column.get_label())
+            if column.get_label() == 'Status':
+                tab_column.set_visible(False)
+            if column.get_label() == 'Last Check':
+                tab_column.set_visible(False)
             self.server.TreeView.append_column(tab_column)
             # the first and second column hold hosts and service name which will get acknowledged/downtime flag
             # indicators added
@@ -2811,6 +2777,26 @@ class ServerVBox(gtk.VBox):
                 tab_column.set_attributes(cell_txt, foreground=8, text=s)
                 tab_column.add_attribute(cell_txt, "cell-background", offset_color[s % 2 ])
                 tab_column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+                if column.get_label() == 'Status Information' and\
+                 str(self.output.conf.fullscreen) == "True":
+                    def resize_wrap(scroll, allocation, treeview, column, cell):
+                        otherColumns = (c for c in treeview.get_columns() if c != column)
+                        newWidth = allocation.width - sum(c.get_width() for c in otherColumns)
+                        newWidth -= treeview.style_get_property("horizontal-separator") * 4
+                        if cell.props.wrap_width == newWidth or newWidth <= 0:
+                                return
+                        if newWidth < 300:
+                                newWidth = 300
+                        cell.props.wrap_width = newWidth
+                        column.set_property('min-width', newWidth + 10)
+                        column.set_property('max-width', newWidth + 10)
+                        store = treeview.get_model()
+                        iter = store.get_iter_first()
+                        while iter and store.iter_is_valid(iter):
+                                store.row_changed(store.get_path(iter), iter)
+                                iter = store.iter_next(iter)
+                                treeview.set_size_request(0,-1)
+                    self.connect_after('size-allocate', resize_wrap, self.server.TreeView, tab_column, cell_txt)
 
             # set customized sorting
             if column.has_customized_sorting():
@@ -2998,9 +2984,6 @@ class ServerVBox(gtk.VBox):
             elif remoteservice == "Edit actions...":
                 # open actions settings
                 self.output.GetDialog(dialog="Settings", servers=self.output.servers, output=self.output, conf=self.output.conf, first_page="Actions")
-            elif remoteservice == "Monitor":
-                # let Actions.TreeViewNagios do the work to open a webbrowser with nagios informations
-                Actions.TreeViewNagios(self.miserable_server, self.miserable_host, self.miserable_service)
             elif remoteservice == "Recheck":
                 # start new rechecking thread
                 recheck = Actions.Recheck(server=self.miserable_server, host=self.miserable_host, service=self.miserable_service)
@@ -4530,7 +4513,7 @@ class GenericAction(object):
         cr = gtk.CellRendererText()
         self.combobox_action_type.pack_start(cr, True)
         self.combobox_action_type.set_attributes(cr, text=0)
-        for action_type in ["Browser", "Command", "URL"]:
+        for action_type in ["Command", "URL"]:
             self.combomodel_action_type.append((action_type,))
         self.combobox_action_type.set_model(self.combomodel_action_type)
 
