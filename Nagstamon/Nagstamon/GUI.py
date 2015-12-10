@@ -2731,6 +2731,8 @@ class ServerVBox(gtk.VBox):
 
         for s, column in enumerate(self.server.COLUMNS):
             tab_column = gtk.TreeViewColumn(column.get_label())
+            if column.get_label() == 'Status':
+                tab_column.set_visible(False)
             self.server.TreeView.append_column(tab_column)
             # the first and second column hold hosts and service name which will get acknowledged/downtime flag
             # indicators added
